@@ -1,10 +1,11 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
+import store from './store'
 </script>
 
 <template>
   <header>
-    <h1>Hello, world!</h1>
+    <h1>Logged in as {{ store.user }}</h1>
 
     <div class="wrapper">
 
@@ -12,12 +13,25 @@ import { RouterLink, RouterView } from 'vue-router'
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/login">Login</RouterLink>
         <RouterLink to="/dashboard">Dashboard</RouterLink>
+        <RouterLink to="/bet">Bet!</RouterLink>
       </nav>
     </div>
   </header>
 
   <RouterView />
 </template>
+
+<script>
+export default {
+  data() { return {}; },
+  beforeCreate() {
+    let query = (new URL(window.location.href)).searchParams;
+    if(query.has("nav_to")){
+      this.$router.push(query.get("nav_to"));
+    }
+  }
+}
+</script>
 
 <style scoped>
 header {

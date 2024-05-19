@@ -1,3 +1,0 @@
-CREATE TABLE IF NOT EXISTS users (
-  username VARCHAR(40) NOT NULL
-);

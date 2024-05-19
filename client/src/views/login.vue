@@ -7,6 +7,8 @@
 </template>
 
 <script>
+  import store from '../store'
+
   export default {
     name: 'Login',
     data() {
@@ -17,13 +19,14 @@
       }
     },
     methods: {
-      login() {
+      async login() {
         if(this.input.username != "") {
-          fetch('/api/login', {
+          let result = await fetch('/api/login', {
             method: 'POST',
             data: {username: this.input.username}
-          })
-          .then(this.$router.replace({ name: "dashboard" }))
+          });
+          store.login(this.input.username);
+          this.$router.replace({ name: "dashboard" });
         }
       }
     }
