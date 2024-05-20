@@ -6,14 +6,30 @@ import csv
 csvfile = csv.reader(sys.stdin, delimiter=';')
 assert list(next(csvfile)) == ["team_home_name", "team_away_name", "game_starts_at" ]  # consume and check header
 
+try:
+    mode = sys.argv[1]
+    assert mode in ['sql', 'json']
+except IndexError:
+    mode = 'sql'
+
 rows = []
 for row in csvfile:
     team1, team2, startTime = row
-    rows.append( f"( '{team1}', '{team2}', '{startTime}' )" )  # TODO: fix possible SQL injection
-    # not too much of a problem as long we can trust data.csv
+    if mode == 'sgl':
+        rows.append( f"( '{team1}', '{team2}', '{startTime}' )" )  # TODO: fix possible SQL injection
+        # not too much of a problem as long we can trust data.csv
+    elif mode == 'json':
+        startTime = startTime.replace(' ', 'T'); startTime += '+02:00' # simple ISO8601 formatting with German timezone
+        rows.append( f'{{"team_home": "{team1}", "team_away": "{team2}", "starts_at": "{startTime}" }}' ) # TODO: again here, we might have to escape characters
 
-print("INSERT INTO games ( team_home, team_away, starts_at ) VALUES")
+if mode == 'sql':
+    print("INSERT INTO games ( team_home, team_away, starts_at ) VALUES")
+elif mode == 'json':
+    print("[")
 
 print(',\n'.join(rows))
 
-print(";")
+if mode == 'sql':
+    print(";")
+elif mode == 'json':
+    print("]")
