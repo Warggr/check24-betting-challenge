@@ -2,6 +2,7 @@ mod database;
 mod schema;
 mod orm;
 mod betting;
+mod realtime;
 
 #[macro_use] extern crate rocket;
 
@@ -51,13 +52,16 @@ fn redirect_to_singlepage(path: PathBuf) -> Redirect {
     Redirect::to(vue_root)
 }
 
+use crate::realtime::ConnectedClients;
+
 #[launch]
 fn rocket() -> _ {
     rocket::build()
         .attach(database::stage())
+        .manage(ConnectedClients::new())
         .mount("/", routes![redirect_root_to_web])
         .mount("/", routes![favicon])
-        .mount("/test/", routes![login, hello])
+        .mount("/test/", routes![realtime::stream, realtime::new_event])
         .mount("/api/", schema::routes())
         .mount("/web/", routes![singlepage, redirect_to_singlepage])
         .mount("/assets/", FileServer::from("../client/dist/assets"))
