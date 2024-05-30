@@ -1,28 +1,28 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { Home, Login, Dashboard, Betting } from './views/index'
+import { Home, Communities, Betting, CommunityDashboard } from './views/index'
+import store from './store'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL + "web/"),
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: Home
+      component: Home,
     },
     {
-      path: '/login',
-      name: 'login',
-      component: Login,
-    },
-    {
-      path: '/dashboard',
-      name: 'dashboard',
-      component: Dashboard,
+      path: '/communities',
+      component: Communities,
+      meta: { requiresAuth: true },
     },
     {
       path: '/bet',
-      name: 'bet',
       component: Betting,
+    },
+    {
+      name: 'communityDashboard',
+      path: '/communities/:id',
+      component: CommunityDashboard,
+      meta: { requiresAuth: true },
     },
     /*{
       path: '/about',
@@ -33,6 +33,15 @@ const router = createRouter({
       component: () => import('../views/AboutView.vue')
     }*/
   ]
+})
+
+router.beforeEach((to, _from) => {
+  if (to.meta.requiresAuth && store.user === undefined) {
+    return {
+      path: '/login',
+      query: { redirect: to.fullPath },
+    }
+  }
 })
 
 export default router

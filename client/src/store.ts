@@ -1,9 +1,14 @@
 import { reactive } from 'vue';
 
+type User = { name: string, id: number };
+
 const store = reactive({
-  user: undefined,
-  login(username : string) {
-    this.user = username;
+  user:
+    import.meta.env.MODE == "development"
+      ? { name: "TestUser", id: 0 }
+      : undefined,
+  login(user : User) {
+    this.user = user;
   },
   logout() {
     this.user = undefined;
@@ -11,4 +16,3 @@ const store = reactive({
 });
 
 export default store;
-3

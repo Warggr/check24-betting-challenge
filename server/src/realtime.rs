@@ -1,8 +1,7 @@
-use std::sync::atomic::Ordering;
 use rocket::response::stream::{Event, EventStream};
 use rocket::tokio::sync::broadcast;
 use rocket::{Shutdown, State};
-use rocket::response::status::{Created, NoContent};
+use rocket::response::status::NoContent;
 use rocket::tokio::select;
 
 pub struct ConnectedClients {

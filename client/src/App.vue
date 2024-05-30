@@ -4,15 +4,26 @@ import store from './store'
 </script>
 
 <template>
+  <div v-if="errorBubble" background="red">{{ errorBubble }}</div><!-- TODO: a fancy pop-up -->
   <header>
-    <h1>Logged in as {{ store.user }}</h1>
+    <div class="wrapper" v-if="store.user">
+      <span v-if="store.user">Logged in as {{ store.user.name }}</span>
+      <button v-if="store.user" @click="store.logout">Log out</button>
+    </div>
+
+    <div v-else class="wrapper">
+      <span>You are not logged in.</span>
+      <form @submit.prevent="login_or_register"> <!-- TODO: this could be prettier -->
+        <input placeholder="Username" required/>
+        <button type="submit" name="login">Log in</button>
+        <button type="submit" name="register">Register</button>
+      </form>
+    </div>
 
     <div class="wrapper">
-
       <nav>
         <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/login">Login</RouterLink>
-        <RouterLink to="/dashboard">Dashboard</RouterLink>
+        <RouterLink v-if="store.user" to="/communities">Communities</RouterLink>
         <RouterLink to="/bet">Bet!</RouterLink>
       </nav>
     </div>
@@ -23,12 +34,47 @@ import store from './store'
 
 <script>
 export default {
-  data() { return {}; },
+  data() { return {
+    errorBubble: undefined, // TODO popup
+  }; },
   beforeCreate() {
     let query = (new URL(window.location.href)).searchParams;
     if(query.has("nav_to")){
       this.$router.push(query.get("nav_to"));
     }
+  },
+  methods: {
+    login(username) {
+      if(import.meta.env.MODE == "development"){ store.login(username); return; }
+      fetch("/api/login", { method: 'POST', body: username })
+        .then(async response => {
+          if(!response.ok) throw new Error("API error:" + response.status);
+          this.on_successful_login_response(await response.json());
+        })
+        .catch(err => this.errorBubble = err);
+    },
+    register(username) {
+      fetch("/api/users", { method: 'POST', body: username })
+        .then(async response => {
+          if(!response.ok) throw new Error("API error:" + response.status);
+          const userId = response.headers.get('Location').split('/')[2];
+          this.on_successful_login_response({ name: username, id: userId }); // let's not actually call the API
+        })
+        .catch(err => this.errorBubble = err);
+    },
+    on_successful_login_response(user) {
+      store.login(user);
+      let query = (new URL(window.location.href)).searchParams;
+      if(query.has("redirect")){ // TODO: do that only on the login page, else it could get confusing
+        this.$router.push(query.get("redirect"));
+      }
+    },
+    login_or_register(event) {
+      const username = event.target.children[0].value;
+      if(event.submitter.name == "login") this.login(username);
+      else if(event.submitter.name == "register") this.register(username);
+      else throw new Error("Assertion failed: unknown action " + event.submitter.name);
+    },
   }
 }
 </script>

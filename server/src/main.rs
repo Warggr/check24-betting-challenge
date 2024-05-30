@@ -8,10 +8,13 @@ mod realtime;
 
 use rocket::http::CookieJar;
 use rocket::http::RawStr;
+use rocket::serde::json::Json;
 use rocket::fs::{FileServer, NamedFile};
 use rocket::response::Redirect;
 use std::path::PathBuf;
-
+use rocket_db_pools::Connection;
+use crate::database::Db;
+use crate::schema::AppError;
 
 #[get("/hello")]
 fn hello(cookies: &CookieJar<'_>) -> String {
@@ -22,9 +25,14 @@ fn hello(cookies: &CookieJar<'_>) -> String {
 }
 
 #[post("/login", data="<username>")]
-fn login(username: String, cookies: &CookieJar<'_>) -> Redirect {
-    cookies.add(("username", username));
-    Redirect::to(uri!(hello()))
+async fn login(db: Connection<Db>, username: String, cookies: &CookieJar<'_>) -> Result<Option<Json<schema::User>>, AppError> {
+    match orm::get_user(db, &username).await? {
+        None => Ok(None),
+        Some(user) => {
+            cookies.add(("token", user.id.to_string()));
+            Ok(Some(Json(user)))
+        }
+    }
 }
 
 #[get("/")]
@@ -44,7 +52,7 @@ fn redirect_root_to_web() -> Redirect {
     Redirect::to(FRONTEND_ROOT)
 }
 
-#[get("/<path..>", rank=11)] // very high rank (higher than the file server) so this will be matched
+#[get("/<path..>")]
 fn redirect_to_singlepage(path: PathBuf) -> Redirect {
     let mut vue_root = String::from(FRONTEND_ROOT);
     vue_root.push_str("?nav_to="); // TODO: compile-time concat
@@ -62,6 +70,7 @@ fn rocket() -> _ {
         .mount("/", routes![redirect_root_to_web])
         .mount("/", routes![favicon])
         .mount("/test/", routes![realtime::stream, realtime::new_event])
+        .mount("/api/", routes![login])
         .mount("/api/", schema::routes())
         .mount("/web/", routes![singlepage, redirect_to_singlepage])
         .mount("/assets/", FileServer::from("../client/dist/assets"))

@@ -1,6 +1,7 @@
-import Dashboard from './dashboard.vue'
+import Communities from './communities.vue'
 import Home from './home.vue'
 import Login from './login.vue'
 import Betting from './betting.vue'
+import CommunityDashboard from './community.vue'
 
-export { Dashboard, Home, Login, Betting }
+export { Communities, Home, Login, Betting, CommunityDashboard }

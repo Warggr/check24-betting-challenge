@@ -1,24 +1,31 @@
 <template>
-  <div class="home">
-    <h1>Communities</h1>
+    <div>
+        <h1>Communities</h1>
 
-    <div v-if="loading" class="loading">Loading...</div>
-    <div v-if="error" class="error">{{ error }}</div>
-    <div v-if="communities" class="content">
-        <Community
-            v-for="community in communities" :key="community.id"
-            :name="community.name"
-            :id="community.id"
-        ></Community>
+        <div v-if="loading" class="loading">Loading...</div>
+        <div v-if="error" class="error">{{ error }}</div>
+        <div v-if="communities" class="content">
+            <Community
+                v-for="community in communities" :key="community.id"
+                :name="community.name"
+                :id="community.id"
+            ></Community>
+        </div>
     </div>
-  </div>
+
+    <form @submit.prevent="createCommunity">
+        <h2>Create community</h2>
+        <input required name="name" placeholder="name"/>
+        <button type="submit">Create</button>
+    </form>
 </template>
+
 <script>
     import Community from '../components/community.vue'
     import store from '../store'
 
     export default {
-        name: 'home',
+        name: 'communities',
         data() {
             return {
                 loading: false,
@@ -65,3 +72,6 @@
         },
     }
 </script>
+
+<style scoped>
+</style>
