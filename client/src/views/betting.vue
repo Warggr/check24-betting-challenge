@@ -7,9 +7,7 @@
         <div v-if="games" class="content">
             <Game
                 v-for="game in games" :key="game.id"
-                :team1="game.team_home"
-                :team2="game.team_away"
-                :date="new Date(game.starts_at)"
+                v-bind="game"
             ></Game>
         </div>
     </div>
@@ -17,6 +15,7 @@
 
 <script>
 import Game from '../components/game.vue'
+import store from '../store'
 
 export default {
     name: 'betting',
@@ -36,13 +35,30 @@ export default {
             this.loading = true;
 
             try {
-                let response = await fetch('/api/games.v0');
-                if(! response.ok) throw new Error(`Server error (${response.status})`);
-                this.games = await response.json();
+                const apiFetch = async (endpoint) => {
+                    const response = await fetch(endpoint);
+                    if(! response.ok) throw new Error(`Server error (${response.status})`);
+                    return await response.json();
+                };
+                let [games, bets] = await Promise.all([ apiFetch('/api/games.v0'), apiFetch(`/api/user/${store.user.id}/bets`)]);
+                bets = Object.fromEntries(bets.map(bet => [ bet.game_id, {home:bet.bet_team_home, away:bet.bet_team_away}] ));
+                console.warn(bets);
+                games = games.map(game => {
+                    game.starts_at = new Date(game.starts_at);
+                    game.bet = bets[game.game_id];
+                    return game;
+                })
+                this.games = games;
+                console.warn(games);
             } catch (err) {
                 this.error = err.toString()
             }
             this.loading = false;
+        },
+        async watchGames() {
+            const evtSource = new EventSource("/test/events");
+            evtSource.onmessage = event => console.log(event.data);
+            return evtSource;
         },
     },
     components: {

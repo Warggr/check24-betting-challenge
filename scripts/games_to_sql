@@ -13,14 +13,14 @@ except IndexError:
     mode = 'sql'
 
 rows = []
-for row in csvfile:
+for i, row in enumerate(csvfile):
     team1, team2, startTime = row
     if mode == 'sgl':
-        rows.append( f"( '{team1}', '{team2}', '{startTime}' )" )  # TODO: fix possible SQL injection
+        rows.append( f"('{i+1}', '{team1}', '{team2}', '{startTime}' )" )  # TODO: fix possible SQL injection
         # not too much of a problem as long we can trust data.csv
     elif mode == 'json':
         startTime = startTime.replace(' ', 'T'); startTime += '+02:00' # simple ISO8601 formatting with German timezone
-        rows.append( f'{{"team_home": "{team1}", "team_away": "{team2}", "starts_at": "{startTime}" }}' ) # TODO: again here, we might have to escape characters
+        rows.append( f'{{"game_id": {i+1}, "team_home": "{team1}", "team_away": "{team2}", "starts_at": "{startTime}" }}' ) # TODO: again here, we might have to escape characters
 
 if mode == 'sql':
     print("INSERT INTO games ( team_home, team_away, starts_at ) VALUES")

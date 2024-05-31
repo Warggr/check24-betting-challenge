@@ -23,7 +23,7 @@
 <script>
 import { RouterLink } from 'vue-router'
 import store from '../store'
-import { Community, page_and_offset } from '../client'
+import { Community, page_and_offset } from '../api/community'
 
 export default {
     data() {

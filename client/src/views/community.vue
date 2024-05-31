@@ -14,6 +14,8 @@
 </template>
 
 <script>
+    import { apiFetch } from '../api'
+
     export default {
         name: 'community_dashboard',
         data() {
@@ -34,9 +36,7 @@
                 this.loading = true;
 
                 try{
-                    let response = await fetch(`/api/communities/${ this.id }/users?${searchParams}`);
-                    if(! response.ok) throw new Error(`Server error (${response.status})`);
-                    this.users = await response.json();
+                    this.users = await apiFetch(`/communities/${ this.id }/users?${searchParams}`);
                 } catch (err) {
                     this.error = err.toString();
                     throw err;
