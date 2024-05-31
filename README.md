@@ -89,3 +89,28 @@ This makes it very performant.
 
 The server essentially does not hold any state on its own; all state is in the database.
 This means we could scale the server horizontally and let the database handle the large number of connections.
+
+## Real-time updates
+Currently, no real-time updates are implemented.
+
+However, in the long term, my plan was the following. Instead of updating the database whenever a goal is scored, the database would be updated only once at the end of the game.
+The real-time updates would be done by an intermediary algorithm, which would query the server a few times to get the rankings before the game, listen to the "goal scored" events,
+and exposes endpoints similar to those of the server, but representing the rankings "as though the game was finished with the current score".
+
+Ideally, the intermediary algorithm (IA) would not keep the current rankings in memory, or even the complete list of users.
+Instead, it would try to evaluate every query lazily (and possibly cache it); and in particular not expand / load into memory lists of users that are not necessary
+(because their points are not close to any user we might look at).
+
+An example lazy evaluation would be like this:
+1. the client asks on which page of the rankings the current user with id $ID is.
+1. the IA asks the server how many points the user with id $ID has.
+1. the IA asks the server for a histogram of the number of users per points (that's pretty straightforward for the server to do with a `GROUP BY` query.
+1. the IA sums all users that have more than 8 points more than the current user - these are definitely still in front in the rankings
+1. the IA checks whether the current user bet on the correct (currently) winning team. If not, we add all users with more points than the current user to the total of users in front (the user made a wrong bet and has definitely not caught up on them).
+1. the IA asks the server for more fine-grained statistics - the number of users within +8 (if the user was correct) or -8 (if wrong) points of the current user, grouped by who they bet would win the current game.
+1. ...(I don't have time to write the full algorithm, I hope you see where this is going - we basically get coarse statistics on numbers of users far from the user, and refine progressively on users that might be either above or below the current user, until we get an exact ranking)
+1. we could then keep these users around the current user into memory, because probably the client will ask to see the page with them and the 9 people around them soon.
+
+The IA is a general concept and could be implemented in multiple way. It could be either a second server (or a second set of endpoints on the server), or it could be part of the client-side logic.
+In fact, it is best if it has to track a small set of users (because then it only cares about a few places within the rankings, and does not have to ask the server for detailed info / lists of users at any other places);
+therefore, implementing the IA in the client (maybe as a service worker?) would be ideal.
