@@ -1,19 +1,25 @@
 use std::cmp::Ordering;
-use crate::schema::GameResult;
+use rocket::serde::{Deserialize, Serialize};
 
-fn goal_difference(result : &GameResult) -> i32 {
+#[derive(PartialEq, Serialize, Deserialize)]
+pub struct GameResult {
+    pub home: u16,
+    pub away: u16,
+}
+
+pub fn goal_difference(result : &GameResult) -> i32 {
     i32::from(result.home) - i32::from(result.away)
 }
 
 #[repr(i8)] // copying std::cmp::ordering
 #[derive(Eq, PartialEq)]
-enum Winner {
+pub(crate) enum Winner {
     Home = -1,
     Draw = 0,
     Away = 1,
 }
 
-fn winner(result : &GameResult) -> Winner {
+pub fn winner(result : &GameResult) -> Winner {
     match result.home.cmp(&result.away) {
         Ordering::Greater => { Winner::Home }
         Ordering::Equal => { Winner::Draw }

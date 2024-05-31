@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS users_x_communities (
 CREATE TABLE IF NOT EXISTS games (
     team_home VARCHAR(20) NOT NULL,
     team_away VARCHAR(20) NOT NULL,
-    starts_at TEXT,
+    starts_at TEXT NOT NULL,
     id INTEGER NOT NULL PRIMARY KEY
 );
 

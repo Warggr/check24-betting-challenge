@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+
+from random import Random
+import base64
+import json
+import sys
+
+try:
+    mode = sys.argv[1]
+    assert mode in ['sql', 'json']
+except IndexError:
+    mode = 'sql'
+
+rnd = Random()
+
+def random_username() -> str:
+    return base64.urlsafe_b64encode(rnd.randbytes(8)).decode()
+
+mu = 10
+sigma = 5
+
+users = range(100)
+users = map(lambda userId: { 'id': userId, 'name': random_username(), 'points': int(rnd.gauss(mu=mu, sigma=sigma)) }, users)
+
+if mode == 'json':
+    json.dump(list(users), fp=sys.stdout)
+elif mode == 'sql':
+    users = map(lambda user: f"('{user['name']}', {user['points']})", users)
+    print("INSERT INTO users ( name, points ) VALUES")
+    print(',\n'.join(users))
+    print(";")

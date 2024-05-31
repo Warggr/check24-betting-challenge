@@ -37,9 +37,3 @@ pub async fn add_to_community(mut db: Connection<Db>, community_id: CommunityId,
 pub fn convert<Precision: TryFrom<i64>>(n : i64) -> Precision {
     Precision::try_from(n).ok().expect("SQL value does not fit into i32")
 }
-
-/*pub async fn list_games(mut db: Connection<Db>) -> Result<Vec<Game>> {
-    sqlx::query_as!(Game, "SELECT * FROM games")
-        .fetch_all(&mut **db)
-        .await
-}*/

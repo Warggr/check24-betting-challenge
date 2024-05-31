@@ -6,7 +6,7 @@
             <span v-else>--:--</span>
             <span v-if="bet_mutable">{{ bet_mutable.home }}:{{ bet_mutable.away }}</span>
             <form v-else @submit.prevent="send_bet">
-                <input type="hidden" name="game_id" :value="game_id"/>
+                <input type="hidden" name="game_id" :value="id"/>
                 <input type="number" name="home" min="0" class="goalnumber"/>:<input type="number" name="away" min="0" class="goalnumber">
                 <button type="submit">Bet!</button>
             </form>
@@ -18,17 +18,18 @@
 
 <script>
 import { userApiFetch } from '../api'
+import store from '../store'
 
 export default {
     data() { console.warn(this.props); return {
         bet_mutable: this.bet,
+        score: store.results[this.id],
     }; },
     props: {
-        game_id: { required: true, type: Number },
+        id: { required: true, type: Number },
         team_home : { required: true, type: String },
         team_away : { required: true, type: String },
         starts_at : { required: true, type: Date },
-        score : { required: false, type: String },
         bet : { required: false, type: Object },
     },
     methods: {

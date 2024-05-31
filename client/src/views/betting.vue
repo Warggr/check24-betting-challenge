@@ -16,6 +16,7 @@
 <script>
 import Game from '../components/game.vue'
 import store from '../store'
+import { apiFetch, userApiFetch } from '../api'
 
 export default {
     name: 'betting',
@@ -26,8 +27,12 @@ export default {
             error: null,
         }
     },
-    created() {
+    mounted() {
         this.fetchGames();
+        store.watchServer();
+    },
+    unmounted() {
+        store.unwatchServer();
     },
     methods: {
         async fetchGames() {
@@ -35,17 +40,12 @@ export default {
             this.loading = true;
 
             try {
-                const apiFetch = async (endpoint) => {
-                    const response = await fetch(endpoint);
-                    if(! response.ok) throw new Error(`Server error (${response.status})`);
-                    return await response.json();
-                };
-                let [games, bets] = await Promise.all([ apiFetch('/api/games.v0'), apiFetch(`/api/user/${store.user.id}/bets`)]);
+                let [games, bets] = await Promise.all([ apiFetch('/games.v0'), userApiFetch(`/bets`)]);
                 bets = Object.fromEntries(bets.map(bet => [ bet.game_id, {home:bet.bet_team_home, away:bet.bet_team_away}] ));
                 console.warn(bets);
-                games = games.map(game => {
+                games = games.map((game, i) => {
                     game.starts_at = new Date(game.starts_at);
-                    game.bet = bets[game.game_id];
+                    game.bet = bets[game.id];
                     return game;
                 })
                 this.games = games;
@@ -54,11 +54,6 @@ export default {
                 this.error = err.toString()
             }
             this.loading = false;
-        },
-        async watchGames() {
-            const evtSource = new EventSource("/test/events");
-            evtSource.onmessage = event => console.log(event.data);
-            return evtSource;
         },
     },
     components: {

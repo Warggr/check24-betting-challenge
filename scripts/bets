@@ -1,0 +1,7 @@
+#!/usr/bin/env python
+
+import random
+
+print("INSERT INTO bets (user_id, game_id, bet_team_home, bet_team_away) VALUES")
+print(',\n'.join(map(lambda i: f'({i}, 1, {random.randint(0, 4)}, {random.randint(0,4)})', range(100))))
+print(";")
