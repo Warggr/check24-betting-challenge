@@ -3,6 +3,8 @@
 A server and web client for a betting game for the European Championship 2024.
 This is a submission for the [Check24 GenDev Challenge](https://github.com/check24-scholarships/check24-betting-challenge).
 
+A video can be found under [this link](https://drive.google.com/file/d/1_DNNCCU6EFadQWeGUO8004WV0Ts4Uavh/view?usp=sharing)
+
 # Deployment
 
 The back-end is written in [Rust](https://www.rust-lang.org/) and the front-end is a [Vue.js](https://vuejs.org/) app. Therefore, you need both [Rust's `cargo`](https://www.rust-lang.org/tools/install) and [Node.js' `npm`](https://nodejs.org/en/download) installed.
